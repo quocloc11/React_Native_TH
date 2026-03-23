@@ -1,78 +1,46 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { COLORS } from '../theme/colors';
 
-const CustomButton = ({
-  title,
-  onPress,
-  variant = 'primary', // primary, secondary, outline
-  size = 'medium', // small, medium, large
-  isLoading = false,
-  disabled = false,
-  icon: Icon
-}) => {
-  const isOutline = variant === 'outline';
+export default function CustomButton({ title, onPress, variant = 'primary', size = 'md', icon: Icon, fullWidth, disabled, style }) {
+  const getVariantStyle = () => {
+    switch (variant) {
+      case 'secondary': return { backgroundColor: COLORS.primaryLight };
+      case 'outline': return { backgroundColor: 'transparent', borderWidth: 1, borderColor: COLORS.border };
+      default: return { backgroundColor: disabled ? COLORS.textLight : COLORS.dark };
+    }
+  };
+
+  const getTextStyle = () => {
+    switch (variant) {
+      case 'secondary': return { color: COLORS.primary };
+      case 'outline': return { color: COLORS.textMain };
+      default: return { color: COLORS.white };
+    }
+  };
+
+  const getSizeStyle = () => {
+    switch (size) {
+      case 'sm': return { height: 36, paddingHorizontal: 16 };
+      case 'lg': return { height: 56, paddingHorizontal: 32 };
+      default: return { height: 48, paddingHorizontal: 24 };
+    }
+  };
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
+      disabled={disabled}
       onPress={onPress}
-      disabled={disabled || isLoading}
-      style={[
-        styles.button,
-        styles[size],
-        styles[variant],
-        disabled && styles.disabled,
-      ]}
+      style={[styles.btnBase, getVariantStyle(), getSizeStyle(), fullWidth && { width: '100%' }, style]}
     >
-      {isLoading ? (
-        <ActivityIndicator color={isOutline ? '#3b82f6' : '#fff'} size="small" />
-      ) : (
-        <View style={styles.content}>
-          {Icon && <View style={styles.iconWrapper}>{Icon}</View>}
-          <Text style={[
-            styles.text,
-            styles[`text_${size}`],
-            isOutline && styles.textOutline,
-            disabled && styles.textDisabled
-          ]}>
-            {title}
-          </Text>
-        </View>
-      )}
+      {Icon && <Icon size={size === 'sm' ? 14 : 18} color={getTextStyle().color} style={{ marginRight: 8 }} />}
+      <Text style={[styles.btnText, getTextStyle(), size === 'sm' && { fontSize: 12 }]}>{title}</Text>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  button: {
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconWrapper: {
-    marginRight: 8,
-  },
-  // Variants
-  primary: { backgroundColor: '#3b82f6' },
-  secondary: { backgroundColor: '#f1f5f9' },
-  outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#3b82f6' },
-  disabled: { backgroundColor: '#cbd5e1', borderColor: '#cbd5e1' },
-  // Sizes
-  small: { paddingVertical: 8, paddingHorizontal: 16 },
-  medium: { paddingVertical: 14, paddingHorizontal: 24 },
-  large: { paddingVertical: 18, paddingHorizontal: 32 },
-  // Text Styles
-  text: { fontWeight: 'bold', color: '#fff' },
-  textOutline: { color: '#3b82f6' },
-  textDisabled: { color: '#94a3b8' },
-  text_small: { fontSize: 14 },
-  text_medium: { fontSize: 16 },
-  text_large: { fontSize: 18 },
+  btnBase: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 16 },
+  btnText: { fontWeight: 'bold' },
 });
-
-export default CustomButton;

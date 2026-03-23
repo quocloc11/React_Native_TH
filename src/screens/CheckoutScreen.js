@@ -1,150 +1,143 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Alert } from 'react-native';
-import { MapPin, CreditCard, CheckCircle2, ChevronLeft } from 'lucide-react-native';
-import CustomInput from '../components/CustomInput';
+import { View, Text, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { ChevronLeft, CheckCircle2, Plus, CreditCard, MapPin, Package } from 'lucide-react-native';
+import { COLORS } from '../theme/colors';
 import CustomButton from '../components/CustomButton';
-import useStore from '../store/useStore';
 
-export default function CheckoutScreen({ navigation, route }) {
-  const { total } = route.params; // Lấy tổng tiền truyền từ Cart
-  const { clearCart } = useStore();
+export default function CheckoutScreen({ navigation }) {
+  const [checkoutStep, setCheckoutStep] = useState(1);
+  const cartTotal = 2450000; // Mock total
 
-  // Quản lý Step và Data Form
-  const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Success
-  const [address, setAddress] = useState('');
-  const [addressError, setAddressError] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('COD'); // COD hoặc CARD
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Validate form trước khi qua bước 2
-  const handleNextStep = () => {
-    if (step === 1) {
-      if (address.trim().length < 10) {
-        setAddressError('Vui lòng nhập địa chỉ chi tiết (ít nhất 10 ký tự)');
-        return;
-      }
-      setAddressError('');
-      setStep(2);
-    }
+  const handleCheckout = () => {
+    // Xử lý thanh toán xong, chuyển sang trang SUCCESS
+    // navigation.navigate('SUCCESS'); 
+    alert("Đặt hàng thành công!");
+    navigation.navigate('MainTabs'); // Quay về trang chủ
   };
-
-  // Giả lập call API thanh toán
-  const handlePlaceOrder = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      clearCart(); // Mua xong thì xóa giỏ hàng
-      setStep(3); // Chuyển sang màn hình Thành công
-    }, 2000);
-  };
-
-  // --- RENDERS ---
-  const renderStepIndicator = () => (
-    <View style={styles.stepper}>
-      <Text style={[styles.stepText, step >= 1 && styles.stepActive]}>1. Giao hàng</Text>
-      <Text style={styles.stepLine}>—</Text>
-      <Text style={[styles.stepText, step >= 2 && styles.stepActive]}>2. Thanh toán</Text>
-    </View>
-  );
-
-  const renderStep1 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.sectionTitle}>Địa chỉ nhận hàng</Text>
-      <CustomInput
-        label="Địa chỉ chi tiết"
-        placeholder="Số nhà, Tên đường, Phường/Xã..."
-        value={address}
-        onChangeText={setAddress}
-        error={addressError}
-        icon={<MapPin size={20} color="#94a3b8" />}
-      />
-      <CustomButton title="Tiếp tục thanh toán" onPress={handleNextStep} style={{ marginTop: 20 }} />
-    </View>
-  );
-
-  const renderStep2 = () => (
-    <View style={styles.stepContainer}>
-      <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
-
-      {/* Nút chọn COD */}
-      <CustomButton
-        title="Thanh toán khi nhận hàng (COD)"
-        variant={paymentMethod === 'COD' ? 'primary' : 'outline'}
-        onPress={() => setPaymentMethod('COD')}
-        style={{ marginBottom: 12 }}
-      />
-
-      {/* Nút chọn Thẻ */}
-      <CustomButton
-        title="Thẻ tín dụng / Ghi nợ"
-        variant={paymentMethod === 'CARD' ? 'primary' : 'outline'}
-        onPress={() => setPaymentMethod('CARD')}
-        icon={<CreditCard size={20} color={paymentMethod === 'CARD' ? '#fff' : '#3b82f6'} />}
-      />
-
-      <View style={styles.summaryBox}>
-        <Text style={styles.summaryText}>Tổng thanh toán:</Text>
-        <Text style={styles.totalText}>{total.toLocaleString('vi-VN')}đ</Text>
-      </View>
-
-      <CustomButton
-        title="Xác nhận Đặt hàng"
-        isLoading={isLoading}
-        onPress={handlePlaceOrder}
-        style={{ marginTop: 24 }}
-      />
-    </View>
-  );
-
-  const renderSuccess = () => (
-    <View style={styles.successContainer}>
-      <CheckCircle2 size={80} color="#10b981" />
-      <Text style={styles.successTitle}>Đặt hàng thành công!</Text>
-      <Text style={styles.successSub}>Mã đơn hàng của bạn là #VN{Math.floor(Math.random() * 100000)}</Text>
-      <CustomButton
-        title="Về trang chủ"
-        onPress={() => navigation.navigate('Home')}
-        style={{ marginTop: 30, width: '100%' }}
-      />
-    </View>
-  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header (Ẩn khi ở bước 3) */}
-      {step < 3 && (
-        <View style={styles.header}>
-          <ChevronLeft size={28} color="#0f172a" onPress={() => step === 2 ? setStep(1) : navigation.goBack()} />
-          <Text style={styles.headerTitle}>Thanh toán</Text>
-          <View style={{ width: 28 }} />
-        </View>
-      )}
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.stackScreen}>
+      <View style={styles.simpleHeader}>
+        {/* NÚT QUAY LẠI CHUẨN: navigation.goBack() */}
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
+          <ChevronLeft size={24} color={COLORS.textMain} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Thanh toán ({checkoutStep}/3)</Text>
+        <View style={{ width: 40 }} />
+      </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {step < 3 && renderStepIndicator()}
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderSuccess()}
+      <ScrollView style={styles.flex1} contentContainerStyle={styles.checkoutBody}>
+        {checkoutStep === 1 && (
+          <View>
+            <Text style={styles.checkoutStepTitle}>Địa chỉ nhận hàng</Text>
+            <View style={styles.addressBox}>
+              <View style={styles.addressBoxHeader}>
+                <Text style={styles.addressName}>Nguyễn Văn A - 0987654321</Text>
+                <CheckCircle2 size={18} color={COLORS.primary} />
+              </View>
+              <Text style={styles.addressText}>Toà nhà Bitexco, Số 2 Hải Triều, Q.1, TP.HCM</Text>
+            </View>
+            <TouchableOpacity style={styles.addAddressBtn}>
+              <Plus size={18} color={COLORS.textMuted} />
+              <Text style={styles.addAddressText}>Thêm địa chỉ mới</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {checkoutStep === 2 && (
+          <View>
+            <Text style={styles.checkoutStepTitle}>Phương thức thanh toán</Text>
+            {[
+              { id: 1, name: 'Thẻ Tín Dụng / Ghi Nợ', icon: CreditCard, color: COLORS.primary },
+              { id: 2, name: 'Ví MoMo', icon: MapPin, color: '#e81cff' },
+              { id: 3, name: 'Thanh toán khi nhận hàng (COD)', icon: Package, color: COLORS.success }
+            ].map((method, idx) => {
+              const isActive = idx === 2; // Giả lập chọn COD
+              return (
+                <TouchableOpacity key={idx} style={[styles.methodBox, isActive && styles.methodBoxActive]}>
+                  <View style={styles.methodIconBox}>
+                    <method.icon size={20} color={method.color} />
+                  </View>
+                  <Text style={styles.methodText}>{method.name}</Text>
+                  <View style={[styles.radioCircle, isActive && styles.radioCircleActive]}>
+                    {isActive && <View style={styles.radioDot} />}
+                  </View>
+                </TouchableOpacity>
+              )
+            })}
+          </View>
+        )}
+
+        {checkoutStep === 3 && (
+          <View>
+            <Text style={styles.checkoutStepTitle}>Xác nhận đơn hàng</Text>
+            <View style={styles.summaryBox}>
+              <View style={styles.summaryItemRow}>
+                <Text style={styles.summaryItemText}>1x Nike Air Max</Text>
+                <Text style={styles.summaryItemPrice}>2.450.000đ</Text>
+              </View>
+            </View>
+            <View style={styles.summaryBox}>
+              <View style={styles.summaryCalcRow}>
+                <Text style={styles.summaryCalcLabel}>Tạm tính</Text>
+                <Text style={styles.summaryCalcLabel}>{cartTotal.toLocaleString()}đ</Text>
+              </View>
+              <View style={styles.summaryCalcRow}>
+                <Text style={styles.summaryCalcLabel}>Phí vận chuyển</Text>
+                <Text style={styles.summaryFreeShipping}>Miễn phí</Text>
+              </View>
+              <View style={styles.summaryTotalDivider} />
+              <View style={styles.summaryTotalRow}>
+                <Text style={styles.summaryTotalLabel}>Tổng cộng</Text>
+                <Text style={styles.summaryTotalValue}>{cartTotal.toLocaleString()}đ</Text>
+              </View>
+            </View>
+          </View>
+        )}
       </ScrollView>
-    </SafeAreaView>
+
+      <View style={styles.checkoutBottomBar}>
+        <CustomButton
+          title={checkoutStep < 3 ? "Tiếp tục" : "Đặt hàng ngay"}
+          fullWidth size="lg"
+          onPress={() => checkoutStep < 3 ? setCheckoutStep(prev => prev + 1) : handleCheckout()}
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderColor: '#f1f5f9' },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#0f172a' },
-  content: { padding: 20 },
-  stepper: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 30 },
-  stepText: { fontSize: 14, color: '#94a3b8', fontWeight: 'bold' },
-  stepActive: { color: '#3b82f6' },
-  stepLine: { marginHorizontal: 12, color: '#cbd5e1' },
-  stepContainer: { flex: 1 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, color: '#1e293b' },
-  summaryBox: { backgroundColor: '#f8fafc', padding: 16, borderRadius: 12, marginTop: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  summaryText: { fontSize: 16, color: '#64748b' },
-  totalText: { fontSize: 20, fontWeight: '900', color: '#3b82f6' },
-  successContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 50 },
-  successTitle: { fontSize: 24, fontWeight: 'bold', color: '#10b981', marginTop: 20 },
-  successSub: { fontSize: 14, color: '#64748b', marginTop: 10, textAlign: 'center' },
+  stackScreen: { flex: 1, backgroundColor: COLORS.background },
+  flex1: { flex: 1 },
+  simpleHeader: { flexDirection: 'row', alignItems: 'center', padding: 20, paddingTop: 40, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  headerBackBtn: { width: 40, height: 40, justifyContent: 'center' },
+  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: COLORS.textMain },
+  checkoutBody: { padding: 20, paddingBottom: 100 },
+  checkoutStepTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.textMain, marginBottom: 16 },
+  addressBox: { backgroundColor: COLORS.white, padding: 16, borderRadius: 16, borderWidth: 2, borderColor: COLORS.primary, marginBottom: 16 },
+  addressBoxHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  addressName: { fontWeight: 'bold', color: COLORS.textMain },
+  addressText: { fontSize: 14, color: COLORS.textMuted },
+  addAddressBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.border, borderRadius: 16 },
+  addAddressText: { fontSize: 14, fontWeight: 'bold', color: COLORS.textMuted, marginLeft: 8 },
+  methodBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, padding: 16, borderRadius: 16, borderWidth: 2, borderColor: 'transparent', marginBottom: 12 },
+  methodBoxActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight + '50' },
+  methodIconBox: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.surface, justifyContent: 'center', alignItems: 'center' },
+  methodText: { flex: 1, marginLeft: 12, fontWeight: 'bold', color: COLORS.textMain },
+  radioCircle: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: COLORS.border, justifyContent: 'center', alignItems: 'center' },
+  radioCircleActive: { borderColor: COLORS.primary },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.primary },
+  summaryBox: { backgroundColor: COLORS.white, padding: 16, borderRadius: 16, marginBottom: 16 },
+  summaryItemRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 },
+  summaryItemText: { fontSize: 14, color: COLORS.textMuted },
+  summaryItemPrice: { fontSize: 14, fontWeight: 'bold', color: COLORS.textMain },
+  summaryCalcRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  summaryCalcLabel: { fontSize: 14, color: COLORS.textMuted },
+  summaryFreeShipping: { fontSize: 14, color: COLORS.success, fontWeight: 'bold' },
+  summaryTotalDivider: { height: 1, backgroundColor: COLORS.border, marginVertical: 8 },
+  summaryTotalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  summaryTotalLabel: { fontSize: 16, fontWeight: 'bold', color: COLORS.textMain },
+  summaryTotalValue: { fontSize: 20, fontWeight: '900', color: COLORS.primary },
+  checkoutBottomBar: { padding: 20, backgroundColor: COLORS.white, borderTopWidth: 1, borderTopColor: COLORS.border },
 });
