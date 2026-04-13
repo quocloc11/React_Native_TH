@@ -20,7 +20,7 @@ const Tab = createBottomTabNavigator();
 
 function BottomTabs() {
   const cartCount = useStore(state => state.cart.length);
-
+  const favoritesCount = useStore(state => state.favorites.length);
   return (
     <Tab.Navigator
       screenOptions={{
@@ -41,7 +41,15 @@ function BottomTabs() {
           tabBarBadge: cartCount > 0 ? cartCount : null
         }}
       />
-      <Tab.Screen name="FAVORITES" component={FavoritesScreen} options={{ tabBarIcon: ({ color }) => <Heart color={color} size={22} />, tabBarLabel: 'Yêu thích' }} />
+      <Tab.Screen
+        name="FAVORITES"
+        component={FavoritesScreen}
+        options={{
+          tabBarIcon: ({ color }) => <Heart color={color} size={22} />,
+          tabBarLabel: 'Yêu thích',
+          tabBarBadge: favoritesCount > 0 ? favoritesCount : null // THÊM DÒNG NÀY: Hiển thị số lượng yêu thích
+        }}
+      />
       <Tab.Screen name="PROFILE" component={ProfileScreen} options={{ tabBarIcon: ({ color }) => <User color={color} size={22} />, tabBarLabel: 'Tôi' }} />
     </Tab.Navigator>
   );

@@ -1,11 +1,11 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 
-/**
- * Metro configuration
- * https://facebook.github.io/metro/docs/configuration
- *
- * @type {import('metro-config').MetroConfig}
- */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+// ✅ DÒNG QUYẾT ĐỊNH: Ép Metro đưa .css vào danh sách tìm kiếm
+defaultConfig.resolver.sourceExts.push('css');
+
+const config = mergeConfig(defaultConfig, {});
+
+module.exports = withNativeWind(config, { input: './global.css' });
